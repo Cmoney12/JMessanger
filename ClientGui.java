@@ -11,9 +11,11 @@ public class ClientGui extends JFrame {
     private DataInputStream input;
     public int ServerPort = 1234;
     private Socket s;
-    private JTextArea display;
+    public JTextArea display;
     public String username;
     public String currReciever;
+    public boolean usernameSent = false;
+    public String message;
 
     ClientGui() {
         JSplitPane splitPane = new JSplitPane();
@@ -109,9 +111,7 @@ public class ClientGui extends JFrame {
             try {
                 InetAddress ip = InetAddress.getByName("localhost");
                 s = new Socket(ip, ServerPort);
-
                 //Send username
-
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, e, "Warning", JOptionPane.WARNING_MESSAGE);
             }
@@ -120,27 +120,19 @@ public class ClientGui extends JFrame {
             output.flush();
             input = new DataInputStream(s.getInputStream());
             //call method
-            startChat();
+            sendUserName(username);
+            ReadingThread task = new ReadingThread(s, this);
+            Thread thread = new Thread(task);
+            thread.start();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e, "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public void startChat() throws IOException {
-        try {
-            String message = input.readUTF();
-            //display.append("\n" + message);
-            if(message.equals("Connected ")){
-                sendUserName(username);
-            } else {
-                display.append("\n" + message);
-                message = "";
-            }
-        } catch (IOException e) {
-            throw e;
-        }
-    }
+    public void startChat() {
 
+    }
+            
     public void setUsername(String user) {
         username = user;
         System.out.println(user);
@@ -159,6 +151,7 @@ public class ClientGui extends JFrame {
             display.append("\t" + "\n" + message);
             output.writeUTF(currReciever + ":" + message);
             output.flush();
+            startChat();
         } catch (IOException e) {
             display.append("OOOPs message was unsuccessful");
         }
