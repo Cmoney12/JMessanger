@@ -1,2 +1,2 @@
 # JMessanger
-Java Swing server client messanger
+Java Swing asynchronous messanger
